@@ -154,17 +154,21 @@ This project proposes a Medical Recommendation System intended to support initia
 ```bash
 git clone https://github.com/TayyabXtreme/AI_Project_Medecine_Recommendation_System.git
 cd AI_Project_Medecine_Recommendation_System
-
-
 ```
+
+
 ### 2. Install Requirements
 
-```pip install flask numpy pandas
+```bash
+
+pip install flask numpy pandas
 ```
 
 ### 3. Run the Flask App
 
 
-```python main.py
+```bash
+
+python main.py
 ```
 
