@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Health Care Center</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #e0eafc, #cfdef3);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .navbar {
+      background: #003049;
+    }
+
+    .navbar-brand,
+    .nav-link,
+    .form-control,
+    .btn {
+      color: white !important;
+    }
+
+    .nav-link:hover {
+      color: #fcbf49 !important;
+    }
+
+    .logo img {
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+
+    .main-heading {
+      color: #003049;
+      font-size: 3rem;
+      font-weight: bold;
+    }
+
+    .form-section {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      padding: 40px;
+      margin-top: 30px;
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      border-color: #003049;
+    }
+
+    .speech-btn {
+      background: #003049;
+      color: white;
+      transition: background 0.3s;
+      border-radius: 30px;
+    }
+
+    .speech-btn:hover {
+      background: #f77f00;
+    }
+
+    .result-container button {
+      transition: all 0.3s ease;
+    }
+
+    .result-container button:hover {
+      transform: scale(1.05);
+    }
+
+    .modal-header {
+      background: #003049;
+      color: white;
+    }
+
+    .modal-body {
+      background-color: #f8f9fa;
+    }
+
+    .btn-danger {
+      background-color: #d62828;
+      border-color: #d62828;
+    }
+
+    .btn-danger:hover {
+      background-color: #a4161a;
+    }
+    #symptom-table-body td:hover {
+      background-color: #fcbf49;
+      color: white;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+     
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+          
+        </ul>
+        <form class="d-flex">
+          <input class="form-control me-2" type="search" placeholder="Search">
+          <button class="btn btn-outline-light" type="submit">Search</button>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container text-center mt-5">
+    <h1 class="main-heading">Health Care Center</h1>
+  </div>
+
+  <div class="container form-section">
+    <form action="/predict" method="post">
+      <div class="mb-3">
+        <label for="symptoms" class="form-label">Select Symptoms:</label>
+        <input type="text" style="color: black !important;" class="form-control" id="symptoms" name="symptoms" placeholder="e.g., itching, sleeping, aching">
+      </div>
+
+      <hr class="my-4">
+<h5 class="text-center mb-3">Click on a Symptom to Copy</h5>
+<div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+  <table class="table table-bordered table-hover">
+    <tbody id="symptom-table-body" class="text-center">
+      <!-- Rows will be generated dynamically -->
+    </tbody>
+  </table>
+</div>
+
+    
+      <div id="transcription" class="alert alert-secondary"></div>
+      {% if message %}
+      <div class="alert alert-warning">{{ message }}</div>
+      {% endif %}
+      <button type="submit" class="btn btn-danger btn-lg w-100">Predict</button>
+    </form>
+  </div>
+
+  {% if predicted_disease %}
+  <div class="container text-center mt-5">
+    <h2 class="main-heading">Our AI System Results</h2>
+    <div class="result-container d-flex flex-wrap justify-content-center mt-3">
+      <!-- Result Buttons -->
+      <button class="btn btn-warning m-2" data-bs-toggle="modal" data-bs-target="#diseaseModal">Disease</button>
+      <button class="btn btn-info m-2" data-bs-toggle="modal" data-bs-target="#descriptionModal">Description</button>
+      <button class="btn btn-success m-2" data-bs-toggle="modal" data-bs-target="#precautionModal">Precaution</button>
+      <button class="btn btn-secondary m-2" data-bs-toggle="modal" data-bs-target="#medicationsModal">Medications</button>
+      <button class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#workoutsModal">Workouts</button>
+      <button class="btn btn-info m-2" data-bs-toggle="modal" data-bs-target="#dietsModal">Diets</button>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Modals Template -->
+  {% for modal in [
+    ['diseaseModal', 'Predicted Disease', predicted_disease],
+    ['descriptionModal', 'Description', dis_des],
+    ['precautionModal', 'Precaution', my_precautions],
+    ['medicationsModal', 'Medications', medications],
+    ['workoutsModal', 'Workouts', workout],
+    ['dietsModal', 'Diets', my_diet]] %}
+  <div class="modal fade" id="{{ modal[0] }}" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ modal[1] }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          {% if modal[0] == 'precautionModal' or modal[0] == 'medicationsModal' or modal[0] == 'workoutsModal' or modal[0] == 'dietsModal' %}
+          <ul>{% for i in modal[2] %}<li>{{ i }}</li>{% endfor %}</ul>
+          {% else %}<p>{{ modal[2] }}</p>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <script>
+    document.getElementById('startSpeechRecognition').addEventListener('click', () => {
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.onresult = (event) => {
+        document.getElementById('transcription').textContent = event.results[0][0].transcript;
+      };
+      recognition.start();
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const symptomsDict = {
+      'itching': 0, 'skin_rash': 1, 'nodal_skin_eruptions': 2, 'continuous_sneezing': 3, 'shivering': 4, 'chills': 5,
+      'joint_pain': 6, 'stomach_pain': 7, 'acidity': 8, 'ulcers_on_tongue': 9, 'muscle_wasting': 10, 'vomiting': 11,
+      'burning_micturition': 12, 'spotting_ urination': 13, 'fatigue': 14, 'weight_gain': 15, 'anxiety': 16,
+      'cold_hands_and_feets': 17, 'mood_swings': 18, 'weight_loss': 19, 'restlessness': 20, 'lethargy': 21,
+      'patches_in_throat': 22, 'irregular_sugar_level': 23, 'cough': 24, 'high_fever': 25, 'sunken_eyes': 26,
+      'breathlessness': 27, 'sweating': 28, 'dehydration': 29, 'indigestion': 30, 'headache': 31, 'yellowish_skin': 32,
+      'dark_urine': 33, 'nausea': 34, 'loss_of_appetite': 35, 'pain_behind_the_eyes': 36, 'back_pain': 37,
+      'constipation': 38, 'abdominal_pain': 39, 'diarrhoea': 40, 'mild_fever': 41, 'yellow_urine': 42,
+      'yellowing_of_eyes': 43, 'acute_liver_failure': 44, 'fluid_overload': 45, 'swelling_of_stomach': 46,
+      'swelled_lymph_nodes': 47, 'malaise': 48, 'blurred_and_distorted_vision': 49, 'phlegm': 50, 'throat_irritation': 51,
+      'redness_of_eyes': 52, 'sinus_pressure': 53, 'runny_nose': 54, 'congestion': 55, 'chest_pain': 56,
+      'weakness_in_limbs': 57, 'fast_heart_rate': 58, 'pain_during_bowel_movements': 59, 'pain_in_anal_region': 60,
+      'bloody_stool': 61, 'irritation_in_anus': 62, 'neck_pain': 63, 'dizziness': 64, 'cramps': 65, 'bruising': 66,
+      'obesity': 67, 'swollen_legs': 68, 'swollen_blood_vessels': 69, 'puffy_face_and_eyes': 70, 'enlarged_thyroid': 71,
+      'brittle_nails': 72, 'swollen_extremeties': 73, 'excessive_hunger': 74, 'extra_marital_contacts': 75,
+      'drying_and_tingling_lips': 76, 'slurred_speech': 77, 'knee_pain': 78, 'hip_joint_pain': 79, 'muscle_weakness': 80,
+      'stiff_neck': 81, 'swelling_joints': 82, 'movement_stiffness': 83, 'spinning_movements': 84,
+      'loss_of_balance': 85, 'unsteadiness': 86, 'weakness_of_one_body_side': 87, 'loss_of_smell': 88,
+      'bladder_discomfort': 89, 'foul_smell_of urine': 90, 'continuous_feel_of_urine': 91, 'passage_of_gases': 92,
+      'internal_itching': 93, 'toxic_look_(typhos)': 94, 'depression': 95, 'irritability': 96, 'muscle_pain': 97,
+      'altered_sensorium': 98, 'red_spots_over_body': 99, 'belly_pain': 100, 'abnormal_menstruation': 101,
+      'dischromic _patches': 102, 'watering_from_eyes': 103, 'increased_appetite': 104, 'polyuria': 105,
+      'family_history': 106, 'mucoid_sputum': 107, 'rusty_sputum': 108, 'lack_of_concentration': 109,
+      'visual_disturbances': 110, 'receiving_blood_transfusion': 111, 'receiving_unsterile_injections': 112,
+      'coma': 113, 'stomach_bleeding': 114, 'distention_of_abdomen': 115, 'history_of_alcohol_consumption': 116,
+      'fluid_overload.1': 117, 'blood_in_sputum': 118, 'prominent_veins_on_calf': 119, 'palpitations': 120,
+      'painful_walking': 121, 'pus_filled_pimples': 122, 'blackheads': 123, 'scurring': 124, 'skin_peeling': 125,
+      'silver_like_dusting': 126, 'small_dents_in_nails': 127, 'inflammatory_nails': 128, 'blister': 129,
+      'red_sore_around_nose': 130, 'yellow_crust_ooze': 131
+    };
+  
+    // Replace `#symptom-input` with your actual input's ID or class
+    const symptomInput = document.getElementById('symptom-input');
+  
+    symptomInput.addEventListener('blur', function () {
+      const val = this.value.trim().toLowerCase().replace(/\s+/g, '_');
+      if (!symptomsDict.hasOwnProperty(val)) {
+        alert('Invalid symptom. Please enter a valid one from the list.');
+        this.value = '';
+        this.focus();
+      }
+    });
+  </script>
+  <script>
+    const symptomsList = Object.keys(symptomsDict);
+    const tableBody = document.getElementById('symptom-table-body');
+    const inputField = document.getElementById('symptoms');
+  
+    function populateSymptomTable() {
+      let row;
+      symptomsList.forEach((symptom, index) => {
+        if (index % 4 === 0) {
+          row = document.createElement('tr');
+          tableBody.appendChild(row);
+        }
+  
+        const cell = document.createElement('td');
+        cell.textContent = symptom;
+        cell.style.cursor = 'pointer';
+        cell.classList.add('bg-light', 'text-primary', 'fw-bold');
+        cell.onclick = () => {
+          inputField.value += inputField.value ? `, ${symptom}` : symptom;
+          inputField.focus();
+        };
+        row.appendChild(cell);
+      });
+    }
+  
+    populateSymptomTable();
+  </script>
+  
+  
+</body>
+
+</html>
